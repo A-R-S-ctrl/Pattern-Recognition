@@ -1,0 +1,5 @@
+function set = generateSet(u1, u2, sigma, s)
+s1 = mvnrnd(u1, sigma, s);
+s2 = mvnrnd(u2, sigma, s);
+set = [s1' s2']';
+end
