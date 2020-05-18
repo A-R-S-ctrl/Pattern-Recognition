@@ -1,0 +1,46 @@
+%-----------------------EXPERIMENT 2(a)-------------------------------
+clc;
+close all;
+clear all;
+mean1 =[2 1];
+mean2=[5 4];
+Sigma=[4 2;2 4];
+testPatterns =[3 5 10 50 100];
+designPatterns =[3 5 10 50 100];
+n=5;
+set1=mvnrnd(mean1,Sigma,100);
+set2=mvnrnd(mean2,Sigma,100);
+designData=[datasample(set1,designPatterns(n));datasample(set2,designPatterns(n))];
+designDataLabels = [ones(1,designPatterns(n))' ;zeros(1,designPatterns(n))'];
+designError=0;
+testError=0;
+varTest=0;
+for k=1:n
+    for i=1:10
+        
+            testset1=mvnrnd(mean1,Sigma,100);
+            testset2=mvnrnd(mean2,Sigma,100);
+            testData=[datasample(testset1,testPatterns(k));datasample(testset2,testPatterns(k))];
+            testDataLabels = [ones(1,testPatterns(k))' ;zeros(1,testPatterns(k))'];
+            Mdl = fitcnb(designData, designDataLabels);
+            [testLabel]=predict(Mdl,testData);
+            testError(k,i)=sum(testDataLabels ~= testLabel)/numel(testDataLabels);
+        
+    end
+    finalTestError(k)=mean(testError(k,:));
+    for i=1:10
+       varTest=varTest+(testError(k,i)-finalTestError(k)).^2;
+    end
+    varTestFinal(k)=varTest/9;
+    varTest=0;
+      
+end
+
+ figure(3)
+ title('Experiment 2(a)');
+ plot(testPatterns,finalTestError,'-o');
+ xlabel('NT samples');
+ ylabel('Mean/Variance');
+ hold on
+ plot(testPatterns,varTestFinal,'-o');
+ legend('Mean','Variance');
