@@ -1,0 +1,34 @@
+%.....................experiment 3....................................
+clc;
+clear all;
+close all;
+dim=[5,10,15];
+trainPatterns=[3,5,10,20,50,100,200];
+firstmean = (1)';
+secondmean = (2)';
+for l=1:3
+    mean1 = repmat(firstmean,1,dim(l));
+    mean2 = repmat(secondmean,1,dim(l));
+    Sigma = eye(dim(l));
+    set1 = mvnrnd(mean1,Sigma,500);
+    set2 = mvnrnd(mean2,Sigma,500);
+    sett1 = mvnrnd(mean1,Sigma,500);
+    sett2 = mvnrnd(mean2,Sigma,500);
+
+    for k=1:7
+        trainData=[datasample(set1,trainPatterns(k));datasample(set2,trainPatterns(k))];
+        trainDatalabels = [ones(1,trainPatterns(k))' ;zeros(1,trainPatterns(k))'];
+        testData=[datasample(sett1,trainPatterns(k));datasample(sett2,trainPatterns(k))];
+        testDatalabels = [ones(1,trainPatterns(k))' ;zeros(1,trainPatterns(k))'];
+        gaussianModel = fitcnb(trainData, trainDatalabels);
+        [testLabel]=predict(gaussianModel,testData);
+        testError(k)=sum(testDatalabels ~= testLabel)/numel(testDatalabels);  
+    end
+    title('Effect of dimensionality');
+    plot(trainPatterns,testError,'-o');
+    ylabel('error');
+    xlabel('Sample size');
+    legend('d=5','d=10','d=15');
+    hold on;
+    e_dimension(l)=testError(k);
+end
