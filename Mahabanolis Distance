@@ -1,0 +1,48 @@
+%........................experiment 4..............
+clear all;
+close all;
+clc;
+dim=10;
+trainPatterns=[3,5,10,20,50,100,200];
+firstMean = (1)';
+secondMean = (2)';
+%mu1 =[2 1];
+%mu2=[5 4];
+%Sigma=[4 2;2 4];
+Sigma=eye(10);
+k=7;
+mean1 = repmat(firstMean,1,10);
+mean2 = repmat(secondMean,1,10);
+testset1=mvnrnd(mean1,Sigma,200);
+testset2=mvnrnd(mean2,Sigma,200);
+testData=[datasample(testset1,trainPatterns(k));datasample(testset2,trainPatterns(k))];
+testDatalabels = [ones(1,trainPatterns(k))' ;zeros(1,trainPatterns(k))'];
+ 
+    for n=1:7
+        
+        set1=mvnrnd(mean1,Sigma,200);
+        set2=mvnrnd(mean2,Sigma,200);
+        designData=[datasample(set1,trainPatterns(n));datasample(set2,trainPatterns(n))];
+        designDatalabels = [ones(1,trainPatterns(n))' ;zeros(1,trainPatterns(n))'];
+        designDatalabel= [ones(1,trainPatterns(n))' zeros(1,trainPatterns(n))'];
+        designDatam=[datasample(set1,trainPatterns(n));datasample(set2,trainPatterns(n))];
+        designDatalabelsm = [ones(10,trainPatterns(n))' ;zeros(10,trainPatterns(n))'];
+        designDatalabelm= [ones(10,trainPatterns(n))' zeros(10,trainPatterns(n))'];
+        Mdl= fitcnb(designData, designDatalabels);
+        [testLabel]=predict(Mdl,testData);
+        testError(n)=sum(testDatalabels ~= testLabel)/numel(testDatalabels);
+        MahaDist(n)=mahal(designDatam,designData);
+    end
+    figure(8);
+    title('test error vs mahaDist');
+    plot(testError,MahaDist,'r');
+    xlabel('error');
+    ylabel('MahaDist');
+    figure(9);
+    title(' mahaDist');
+    plot(trainPatterns,MahaDist);
+    xlabel('ND training samples');
+    ylabel('MahaDist');
+
+  
+    
