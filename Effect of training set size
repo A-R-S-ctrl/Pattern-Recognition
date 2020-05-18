@@ -1,0 +1,83 @@
+% --------------------NAIVE BAYES VS KNN----------------------------------------
+clc;
+close all;
+clear all;
+mean1 =[2 1];
+mnea2=[5 4];
+Sigma=[4 2;2 4];
+designPatterns =[3 5 10 50 100];
+n=5;
+N=100;
+testset1=mvnrnd(mean1,Sigma,N);
+testset2=mvnrnd(mnea2,Sigma,N);
+testData=[datasample(testset1,designPatterns(n));datasample(testset2,designPatterns(n))];
+testDataLabels = [ones(1,designPatterns(n))' ;zeros(1,designPatterns(n))'];
+
+for k=1:n
+    for i=1:10
+        set1=mvnrnd(mean1,Sigma,100);
+        set2=mvnrnd(mnea2,Sigma,100);
+        designData=[datasample(set1,designPatterns(k));datasample(set2,designPatterns(k))];
+        designDatalabels = [ones(1,designPatterns(k))' ;zeros(1,designPatterns(k))'];
+        gaussianModel = fitcnb(designData, designDatalabels);
+        [designLabel]=predict(gaussianModel,designData);
+        [testLabel]=predict(gaussianModel,testData);
+        designError(k,i)=sum(designDatalabels ~= designLabel)/numel(designDatalabels);
+        testError(k,i)=sum(testDataLabels ~= testLabel)/numel(testDataLabels);
+
+    end
+            finalDesignError(k)=mean(designError(k,:))
+            finalTestError(k)=mean(testError(k,:))
+            
+end
+% figure(1)
+% plot(designPatterns,finalDesignError,'-o');
+% hold on;
+% plot(designPatterns,finalTestError,'-o');
+% hold on;
+
+% --------------------Experiment a----------------------------------------
+
+k=[1 3 5 7 9 11 13 15 17 19 21 23 25 27 29 31 33 35 37 39 41 43 45 47 49 51];
+for j=1:5
+    for l=1:26
+        %designErrork=[];
+        testErrork=[];
+        for i=1:10
+           set1k=mvnrnd(mean1,Sigma,100);
+           set2k=mvnrnd(mnea2,Sigma,100);
+            XDk=[datasample(set1k,designPatterns(j));datasample(set2k,designPatterns(j))];
+            XDlabelsk = [ones(1,designPatterns(j))' ;zeros(1,designPatterns(j))'];
+            Mdlk =fitcknn(XDk,XDlabelsk,'NumNeighbors',k(l));
+            [designLabelk]=predict(Mdlk,XDk);
+            [testLabelk]=predict(Mdlk,testData);
+            designErrork(j)=sum(XDlabelsk ~= designLabelk)/numel(XDlabelsk);
+            testErrork(j)=sum(testDataLabels ~= testLabelk)/numel(testDataLabels);
+        end
+            finalDesignErrork(j,l)=mean(designErrork);
+            finalTestErrork(j,l)=mean(testErrork);
+            
+        
+    end
+    [KNNerrorD(j),designLocation(j)]=min(finalDesignErrork(j,:))
+    [KNNerrorT(j),testLocation(j)]=min(finalTestErrork(j,:))
+    kvalueDesign(j) = (designLocation(j) * 2) - 1;
+    kvalueTest(j) = (testLocation(j) * 2) - 1;
+end
+% %figure(3);
+% title('Experiment 1');
+%     ylabel('error');
+%     xlabel('Sample size');
+% plot(designPatterns,KNNerrorD,'-o');
+% hold on;
+% plot(designPatterns,KNNerrorT,'-o');
+% legend('gaussian design error','gaussian test error','KNN design error','KNN test error');
+ figure(2);
+ kvalueDesign=[1 5 9 11 17 ];
+ plot(designPatterns,kvalueDesign,'c');
+ hold on;
+ plot(designPatterns,kvalueTest);
+ xlabel('ND');
+ ylabel('K value');
+ legend('design','Test');
+
